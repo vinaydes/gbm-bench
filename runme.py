@@ -93,6 +93,7 @@ def parse_args():
                         help=("Whether to run a small benchmark (fraud) as a warmup"))
     parser.add_argument("-verbose", action="store_true", help="Produce verbose output")
     parser.add_argument("-extra", default='{}', help="Extra arguments as a python dictionary")
+    parser.add_argument("-json", default='', help='JSON file that contains experiment parameters')
     args = parser.parse_args()
     # default value for output json file
     if not args.output:
@@ -120,7 +121,19 @@ def benchmark(args, dataset_folder, dataset):
 
     return results
 
-
+def benchmark_parameterized(algo, dataset_dir, dataset_params, algorithm_params):
+    data = prepare_dataset(dataset_dir, dataset_params['dataset_name'],
+                           dataset_params['nrows'])
+    results = {}
+    runner = algorithms.Algorithm.create(algo)
+    with runner:
+        train_time = runner.fit(data, algorithm_params)
+        pred = runner.test(data)
+        results = {
+                   "train_time" : train_time,
+                   "accuracy": get_metrics(data, pred)
+                 }
+    return results
 def main():
     args = parse_args()
     args.cpus = get_number_processors(args)
@@ -143,4 +156,19 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    args = parse_args()
+    args.cpus = get_number_processors(args)
+    args.extra = ast.literal_eval(args.extra)
+    print_sys_info(args)
+    
+    with open('experiments.json') as fp:
+        jason_data = json.load(fp)
+        for exp in jason_data['experiments']:
+                dataset_params = exp['dataset_parameters']
+                algorithm_params = exp['algorithm_parameters']
+                print(dataset_params, algorithm_params)
+                dataset_dir = os.path.join(args.root, dataset_params['dataset_name'])
+                res = benchmark_parameterized(exp['algo'], dataset_dir, 
+                                              dataset_params, algorithm_params)
+                print(res)

@@ -32,8 +32,12 @@ import dask.dataframe as dd
 import dask.array as da
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
-import xgboost as xgb
 import cudf
+
+try:
+    import xgboost as xgb
+except ImportError:
+    xgb = None
 
 try:
     import catboost as cat
@@ -149,20 +153,20 @@ class Algorithm(ABC):
 
 
 # learning parameters shared by all algorithms, using the xgboost convention
-shared_params = {"max_depth": 8, "learning_rate": 0.1,
-                 "reg_lambda": 1, "max_samples" : 0.5}
+# shared_params = {"max_depth": 8, "learning_rate": 0.1,
+#                  "reg_lambda": 1, "max_samples" : 0.5}
 
 class CumlRfAlgorithm(Algorithm):
-    def configure(self, data, args):
-        params = shared_params.copy()
-        del params["reg_lambda"]
-        del params["learning_rate"]
-        params["n_estimators"] = args.ntrees
-        params.update(args.extra)
-        return params
+    def configure(self, data, algo_params):
+        # params = shared_params.copy()
+        # del params["reg_lambda"]
+        # del params["learning_rate"]
+        # params["n_estimators"] = args.ntrees
+        # params.update(args.extra)
+        return algo_params
 
-    def fit(self, data, args):
-        params = self.configure(data, args)
+    def fit(self, data, algo_params):
+        params = self.configure(data, algo_params)
         if data.learning_task == LearningTask.REGRESSION:
             with Timer() as t:
                 self.model = cumlrf_r(**params).fit(data.X_train, data.y_train)
@@ -216,14 +220,14 @@ class XgbGPUHistAlgorithm(XgbAlgorithm):
         return params
         
 class SkRandomForestAlgorithm(Algorithm):
-    def configure(self, data, args):
-        params = shared_params.copy()
-        del params["reg_lambda"]
-        del params["learning_rate"]
-        params["n_estimators"] = args.ntrees
-        params.update(args.extra)
-        params.update({"n_jobs" : -1})
-        return params
+    def configure(self, data, algo_params):
+        # params = shared_params.copy()
+        # del params["reg_lambda"]
+        # del params["learning_rate"]
+        # params["n_estimators"] = args.ntrees
+        # params.update(args.extra)
+        # params.update({"n_jobs" : -1})
+        return algo_params
 
     def fit(self, data, args):
         params = self.configure(data, args)
