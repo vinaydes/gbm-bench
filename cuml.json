@@ -1,0 +1,92 @@
+{
+  "experiments": 
+  [
+    {
+      "exp_name" : "cumlrf-airline",
+      "algo"     : "cumlrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "airline",
+        "nrows" : 4602760
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 50,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_bins"       : 128,
+        "use_experimental_backend" : true
+      }
+    },
+    {
+      "exp_name" : "cumlrf-higgs",
+      "algo"     : "cumlrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "higgs"
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 50,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_bins"       : 128,
+        "use_experimental_backend" : true
+      }
+    },
+    {
+      "exp_name" : "cumlrf-epsilon",
+      "algo"     : "cumlrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "epsilon"
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 100,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_bins"       : 128,
+        "use_experimental_backend" : true
+      }
+    },
+    {
+      "exp_name" : "cumlrf-airline-regression",
+      "algo"     : "cumlrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "airline_regression",
+        "nrows" : 4602760
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 50,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_bins"       : 128,
+        "use_experimental_backend" : true
+      }
+    },
+    {
+      "exp_name" : "cumlrf-year",
+      "algo"     : "cumlrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "year"
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 50,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_bins"       : 128,
+        "use_experimental_backend" : true
+      }
+    }
+  ]
+}

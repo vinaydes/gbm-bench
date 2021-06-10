@@ -1,0 +1,87 @@
+{
+  "experiments": 
+  [
+    {
+      "exp_name" : "sklearn-airline",
+      "algo"     : "skrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "airline",
+        "nrows" : 4602760
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 50,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_jobs"       : 8
+      }
+    },
+    {
+      "exp_name" : "sklearn-higgs",
+      "algo"     : "skrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "higgs"
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 50,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_jobs"       : 8
+      }
+    },
+    {
+      "exp_name" : "sklearn-epsilon",
+      "algo"     : "skrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "epsilon"
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 100,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_jobs"       : 8
+      }
+    },
+    {
+      "exp_name" : "sklearn-airline-regression",
+      "algo"     : "skrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "airline_regression",
+        "nrows" : 4602760
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 50,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_jobs"       : 8
+      }
+    },
+    {
+      "exp_name" : "sklearn-year",
+      "algo"     : "skrf",
+      "dataset_parameters" :
+      {
+        "dataset_name" : "year"
+      },
+      "algorithm_parameters" :
+      {
+        "n_estimators" : 50,
+        "max_depth"    : 32,
+        "bootstrap"    : true,
+        "max_samples"  : 0.5,
+        "n_jobs"       : 8
+      }
+    }
+  ]
+}
