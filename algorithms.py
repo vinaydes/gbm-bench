@@ -157,23 +157,14 @@ class Algorithm(ABC):
 #                  "reg_lambda": 1, "max_samples" : 0.5}
 
 class CumlRfAlgorithm(Algorithm):
-    def configure(self, data, algo_params):
-        # params = shared_params.copy()
-        # del params["reg_lambda"]
-        # del params["learning_rate"]
-        # params["n_estimators"] = args.ntrees
-        # params.update(args.extra)
-        return algo_params
-
     def fit(self, data, algo_params):
-        params = self.configure(data, algo_params)
         if data.learning_task == LearningTask.REGRESSION:
             with Timer() as t:
-                self.model = cumlrf_r(**params).fit(data.X_train, data.y_train)
+                self.model = cumlrf_r(**algo_params).fit(data.X_train, data.y_train)
             return t.interval
         else:
             with Timer() as t:
-                self.model = cumlrf(**params).fit(data.X_train, data.y_train)
+                self.model = cumlrf(**algo_params).fit(data.X_train, data.y_train)
             return t.interval
 
     def test(self, data):
@@ -220,24 +211,15 @@ class XgbGPUHistAlgorithm(XgbAlgorithm):
         return params
         
 class SkRandomForestAlgorithm(Algorithm):
-    def configure(self, data, algo_params):
-        # params = shared_params.copy()
-        # del params["reg_lambda"]
-        # del params["learning_rate"]
-        # params["n_estimators"] = args.ntrees
-        # params.update(args.extra)
-        # params.update({"n_jobs" : -1})
-        return algo_params
-
-    def fit(self, data, args):
-        params = self.configure(data, args)
+    def fit(self, data, algo_params):
+        print(algo_params)
         if data.learning_task == LearningTask.REGRESSION:
             with Timer() as t:
-                self.model = skrf_r(**params).fit(data.X_train, data.y_train)
+                self.model = skrf_r(**algo_params).fit(data.X_train, data.y_train)
             return t.interval
         else:
             with Timer() as t:
-                self.model = skrf(**params).fit(data.X_train, data.y_train)
+                self.model = skrf(**algo_params).fit(data.X_train, data.y_train)
             return t.interval
 
     def test(self, data):

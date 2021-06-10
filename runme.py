@@ -36,13 +36,7 @@ from metrics import get_metrics
 from datasets import prepare_dataset
 
 
-def get_number_processors(args):
-    if args.cpus == 0:
-        return psutil.cpu_count(logical=False)
-    return args.cpus
-
-
-def print_sys_info(args):
+def print_sys_info():
     try:
         import xgboost  # pylint: disable=import-outside-toplevel
         print("Xgboost : %s" % xgboost.__version__)
@@ -59,116 +53,66 @@ def print_sys_info(args):
     except ImportError:
         pass
     print("System  : %s" % sys.version)
-    print("#jobs   : %d" % args.cpus)
+    print("#CPUs   : %d" % psutil.cpu_count(logical=False))
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Benchmark xgboost/lightgbm/catboost on real datasets")
-    parser.add_argument("-dataset", default="all", type=str,
-                        help="The dataset to be used for benchmarking. 'all' for all datasets.")
     parser.add_argument("-root", default="/opt/gbm-datasets",
                         type=str, help="The root datasets folder")
-    parser.add_argument("-algorithm", default="all", type=str,
-                        help=("Comma-separated list of algorithms to run; "
-                              "'all' run all"))
-    parser.add_argument("-gpus", default=-1, type=int,
-                        help=("#GPUs to use for the benchmarks; "
-                              "ignored when not supported. Default is to use all."))
-    parser.add_argument("-cpus", default=0, type=int,
-                        help=("#CPUs to use for the benchmarks; "
-                              "0 means psutil.cpu_count(logical=False)"))
+    parser.add_argument("-input", required=True, help='JSON file that contains experiment parameters')
     parser.add_argument("-output", default=sys.path[0] + "/results.json", type=str,
                         help="Output json file with runtime/accuracy stats")
-    parser.add_argument("-ntrees", default=500, type=int,
-                        help=("Number of trees. Default is as specified in "
-                              "the respective dataset configuration"))
-    parser.add_argument("-nrows", default=None, type=int,
-                        help=(
-                            "Subset of rows in the datasets to use. Useful for test running "
-                            "benchmarks on small amounts of data. WARNING: Some datasets will "
-                            "give incorrect accuracy results if nrows is specified as they have "
-                            "predefined train/test splits."))
-    parser.add_argument("-warmup", action="store_true",
-                        help=("Whether to run a small benchmark (fraud) as a warmup"))
     parser.add_argument("-verbose", action="store_true", help="Produce verbose output")
-    parser.add_argument("-extra", default='{}', help="Extra arguments as a python dictionary")
-    parser.add_argument("-json", default='', help='JSON file that contains experiment parameters')
+
     args = parser.parse_args()
-    # default value for output json file
-    if not args.output:
-        args.output = "%s.json" % args.dataset
+
     return args
 
 
 # benchmarks a single dataset
-def benchmark(args, dataset_folder, dataset):
-    data = prepare_dataset(dataset_folder, dataset, args.nrows)
-    results = {}
-    # "all" runs all algorithms
-    if args.algorithm == "all":
-        args.algorithm = "xgb-gpu,xgb-cpu,xgb-gpu-dask,lgbm-cpu,lgbm-gpu,cat-cpu,cat-gpu"
-    for alg in args.algorithm.split(","):
-        print("Running '%s' ..." % alg)
-        runner = algorithms.Algorithm.create(alg)
-        with runner:
-            train_time = runner.fit(data, args)
-            pred = runner.test(data)
-            results[alg] = {
-                "train_time": train_time,
-                "accuracy": get_metrics(data, pred),
-            }
-
-    return results
-
-def benchmark_parameterized(algo, dataset_dir, dataset_params, algorithm_params):
-    data = prepare_dataset(dataset_dir, dataset_params['dataset_name'],
-                           dataset_params['nrows'])
+def benchmark(algo, dataset_dir, dataset_parameters, algorithm_parameters):
+    data = prepare_dataset(dataset_dir, dataset_parameters['dataset_name'],
+                           dataset_parameters['nrows'])
     results = {}
     runner = algorithms.Algorithm.create(algo)
     with runner:
-        train_time = runner.fit(data, algorithm_params)
+        train_time = runner.fit(data, algorithm_parameters)
         pred = runner.test(data)
-        results = {
+        result = {
                    "train_time" : train_time,
                    "accuracy": get_metrics(data, pred)
                  }
-    return results
+    return result
+
 def main():
     args = parse_args()
-    args.cpus = get_number_processors(args)
-    args.extra = ast.literal_eval(args.extra)
-    print_sys_info(args)
-    if args.warmup:
-        benchmark(args, os.path.join(args.root, "fraud"), "fraud")
-    if args.dataset == 'all':
-        args.dataset = 'airline,bosch,fraud,higgs,year,epsilon,covtype'
-    results = {}
-    for dataset in args.dataset.split(","):
-        folder = os.path.join(args.root, dataset)
-        results.update({dataset: benchmark(args, folder, dataset)})
-        print(json.dumps({dataset: results[dataset]}, indent=2, sort_keys=True))
-    output = json.dumps(results, indent=2, sort_keys=True)
-    output_file = open(args.output, "w")
-    output_file.write(output + "\n")
-    output_file.close()
+    print_sys_info()
+
+    with open(args.input) as fp:
+        experiments = json.load(fp)
+        results = []
+        for exp in experiments['experiments']:
+                output = exp.copy()
+                dataset_parameters = exp['dataset_parameters']
+                if not 'nrows' in dataset_parameters.keys():
+                    dataset_parameters['nrows'] = None
+                algorithm_parameters = exp['algorithm_parameters']
+                dataset_dir = os.path.join(
+                    args.root, dataset_parameters['dataset_name'])
+                res = benchmark(exp['algo'], dataset_dir, dataset_parameters,
+                                algorithm_parameters)
+                output.update({'result' : res})
+                results.append(output)
+    # print(json.dumps({ 'experiments' : results }, indent = 2, sort_keys = True))
+    results_str = json.dumps({ 'experiments' : results }, indent=2, sort_keys=True)
+
+    with  open(args.output, "w") as fp:
+        fp.write(results_str + "\n")
+
     print("Results written to file '%s'" % args.output)
 
 
 if __name__ == "__main__":
-    # main()
-    args = parse_args()
-    args.cpus = get_number_processors(args)
-    args.extra = ast.literal_eval(args.extra)
-    print_sys_info(args)
-    
-    with open('experiments.json') as fp:
-        jason_data = json.load(fp)
-        for exp in jason_data['experiments']:
-                dataset_params = exp['dataset_parameters']
-                algorithm_params = exp['algorithm_parameters']
-                print(dataset_params, algorithm_params)
-                dataset_dir = os.path.join(args.root, dataset_params['dataset_name'])
-                res = benchmark_parameterized(exp['algo'], dataset_dir, 
-                                              dataset_params, algorithm_params)
-                print(res)
+    main()
