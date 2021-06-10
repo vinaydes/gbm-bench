@@ -212,7 +212,6 @@ class XgbGPUHistAlgorithm(XgbAlgorithm):
         
 class SkRandomForestAlgorithm(Algorithm):
     def fit(self, data, algo_params):
-        print(algo_params)
         if data.learning_task == LearningTask.REGRESSION:
             with Timer() as t:
                 self.model = skrf_r(**algo_params).fit(data.X_train, data.y_train)
