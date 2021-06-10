@@ -34,7 +34,7 @@ import psutil
 import algorithms
 from metrics import get_metrics
 from datasets import prepare_dataset
-
+import gc
 
 def print_sys_info():
     try:
@@ -84,6 +84,8 @@ def benchmark(algo, dataset_dir, dataset_parameters, algorithm_parameters):
                    "train_time" : train_time,
                    "accuracy": get_metrics(data, pred)
                  }
+    del data
+    gc.collect()
     return result
 
 def main():
