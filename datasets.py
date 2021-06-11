@@ -23,62 +23,17 @@
 # Copyright (c) 2018, NVIDIA CORPORATION. All rights reserved.
 
 import os
-from enum import Enum
 import pickle
-from urllib.request import urlretrieve
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_svmlight_file, fetch_covtype
 import pandas as pd
-import tqdm
-
-pbar = None
 
 
-def show_progress(block_num, block_size, total_size):
-    global pbar
-    if pbar is None:
-        pbar = tqdm.tqdm(total=total_size / 1024, unit='kB')
+from dataset_utils import retrieve, LearningTask, Data
 
-    downloaded = block_num * block_size
-    if downloaded < total_size:
-        pbar.update(block_size / 1024)
-    else:
-        pbar.close()
-        pbar = None
-
-
-def retrieve(url, filename=None):
-    return urlretrieve(url, filename, reporthook=show_progress)
-
-
-class LearningTask(Enum):
-    REGRESSION = 1
-    CLASSIFICATION = 2
-    MULTICLASS_CLASSIFICATION = 3
-
-
-class Data:  # pylint: disable=too-few-public-methods,too-many-arguments
-    def __init__(self, X_train, X_test, y_train, y_test, learning_task, qid_train=None,
-                 qid_test=None):
-        self.X_train = X_train
-        self.X_test = X_test
-        self.y_train = y_train
-        self.y_test = y_test
-        self.learning_task = learning_task
-        # For ranking task
-        self.qid_train = qid_train
-        self.qid_test = qid_test
-
-
-def prepare_dataset(dataset_folder, dataset, nrows):
-    if not os.path.exists(dataset_folder):
-        os.makedirs(dataset_folder)
-    prepare_function = globals()["prepare_" + dataset]
-    return prepare_function(dataset_folder, nrows)
-
-
-def __prepare_airline(dataset_folder, nrows, regression=False):  # pylint: disable=too-many-locals
+def __prepare_airline(dataset_folder, dataset_parameters, regression=False):  # pylint: disable=too-many-locals
+    nrows = dataset_parameters['nrows']
     url = 'http://kt.ijs.si/elena_ikonomovska/datasets/airline/airline_14col.data.bz2'
     pkl_base_name = "airline"
     if regression:
@@ -134,16 +89,14 @@ def __prepare_airline(dataset_folder, nrows, regression=False):  # pylint: disab
     pickle.dump(data, open(pickle_url, "wb"), protocol=4)
     return data
 
+def prepare_airline(dataset_folder, dataset_parameters):
+    return __prepare_airline(dataset_folder, dataset_parameters, False)
 
-def prepare_airline(dataset_folder, nrows):
-    return __prepare_airline(dataset_folder, nrows, False)
+def prepare_airline_regression(dataset_folder, dataset_parameters):
+    return __prepare_airline(dataset_folder, dataset_parameters, True)
 
-
-def prepare_airline_regression(dataset_folder, nrows):
-    return __prepare_airline(dataset_folder, nrows, True)
-
-
-def prepare_bosch(dataset_folder, nrows):
+def prepare_bosch(dataset_folder, dataset_parameters):
+    nrows = dataset_parameters['nrows']
     filename = "train_numeric.csv.zip"
     local_url = os.path.join(dataset_folder, filename)
     pickle_url = os.path.join(dataset_folder,
@@ -165,8 +118,8 @@ def prepare_bosch(dataset_folder, nrows):
     pickle.dump(data, open(pickle_url, "wb"), protocol=4)
     return data
 
-
-def prepare_fraud(dataset_folder, nrows):
+def prepare_fraud(dataset_folder, dataset_parameters):
+    nrows = dataset_parameters['nrows']
     if not os.path.exists(dataset_folder):
         os.makedirs(dataset_folder)
     filename = "creditcard.csv"
@@ -188,8 +141,8 @@ def prepare_fraud(dataset_folder, nrows):
     pickle.dump(data, open(pickle_url, "wb"), protocol=4)
     return data
 
-
-def prepare_higgs(dataset_folder, nrows):
+def prepare_higgs(dataset_folder, dataset_parameters):
+    nrows = dataset_parameters['nrows']
     url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00280/HIGGS.csv.gz'
     local_url = os.path.join(dataset_folder, os.path.basename(url))
     pickle_url = os.path.join(dataset_folder,
@@ -210,8 +163,8 @@ def prepare_higgs(dataset_folder, nrows):
     pickle.dump(data, open(pickle_url, "wb"), protocol=4)
     return data
 
-
-def prepare_year(dataset_folder, nrows):
+def prepare_year(dataset_folder, dataset_parameters):
+    nrows = dataset_parameters['nrows']
     url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00203/YearPredictionMSD.txt' \
           '.zip'
     local_url = os.path.join(dataset_folder, os.path.basename(url))
@@ -246,8 +199,8 @@ def prepare_year(dataset_folder, nrows):
     pickle.dump(data, open(pickle_url, "wb"), protocol=4)
     return data
 
-
-def prepare_epsilon(dataset_folder, nrows):
+def prepare_epsilon(dataset_folder, dataset_parameters):
+    nrows = dataset_parameters['nrows']
     url_train = 'https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary' \
                 '/epsilon_normalized.bz2'
     url_test = 'https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary' \
@@ -289,8 +242,8 @@ def prepare_epsilon(dataset_folder, nrows):
     pickle.dump(data, open(pickle_url, "wb"), protocol=4)
     return data
 
-
-def prepare_covtype(dataset_folder, nrows):  # pylint: disable=unused-argument
+def prepare_covtype(dataset_folder, dataset_parameters):  # pylint: disable=unused-argument
+    nrows = dataset_parameters['nrows']
     X, y = fetch_covtype(return_X_y=True)  # pylint: disable=unexpected-keyword-arg
     if nrows is not None:
         X = X[0:nrows]

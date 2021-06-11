@@ -33,8 +33,11 @@ import ast
 import psutil
 import algorithms
 from metrics import get_metrics
-from datasets import prepare_dataset
 import gc
+
+from datasets import (prepare_airline, prepare_airline_regression, prepare_bosch,
+                      prepare_fraud, prepare_higgs, prepare_year, prepare_epsilon,
+                      prepare_covtype)
 
 def print_sys_info():
     try:
@@ -55,6 +58,12 @@ def print_sys_info():
     print("System  : %s" % sys.version)
     print("#CPUs   : %d" % psutil.cpu_count(logical=False))
 
+def prepare_dataset(dataset_folder, dataset_parameters):
+    if not os.path.exists(dataset_folder):
+        os.makedirs(dataset_folder)
+    prepare_function = globals()["prepare_" + dataset_parameters['dataset_name']]
+    return prepare_function(dataset_folder, dataset_parameters)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -73,8 +82,7 @@ def parse_args():
 
 # benchmarks a single dataset
 def benchmark(algo, dataset_dir, dataset_parameters, algorithm_parameters):
-    data = prepare_dataset(dataset_dir, dataset_parameters['dataset_name'],
-                           dataset_parameters['nrows'])
+    data = prepare_dataset(dataset_dir, dataset_parameters)
     results = {}
     runner = algorithms.Algorithm.create(algo)
     with runner:
