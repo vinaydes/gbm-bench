@@ -16,6 +16,7 @@
         "bootstrap"    : true,
         "max_samples"  : 0.5,
         "n_bins"       : 128,
+        "n_streams"     : 4,
         "use_experimental_backend" : true
       }
     },
@@ -33,6 +34,7 @@
         "bootstrap"    : true,
         "max_samples"  : 0.5,
         "n_bins"       : 128,
+        "n_streams"     : 4,
         "use_experimental_backend" : true
       }
     },
@@ -50,6 +52,7 @@
         "bootstrap"    : true,
         "max_samples"  : 0.5,
         "n_bins"       : 128,
+        "n_streams"     : 4,
         "use_experimental_backend" : true
       }
     },
@@ -68,6 +71,7 @@
         "bootstrap"    : true,
         "max_samples"  : 0.5,
         "n_bins"       : 128,
+        "n_streams"     : 4,
         "use_experimental_backend" : true
       }
     },
@@ -85,6 +89,7 @@
         "bootstrap"    : true,
         "max_samples"  : 0.5,
         "n_bins"       : 128,
+        "n_streams"     : 4,
         "use_experimental_backend" : true
       }
     }
