@@ -23,27 +23,28 @@
 # Copyright (c) 2018, NVIDIA CORPORATION. All rights reserved.
 
 import os
-import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_svmlight_file, fetch_covtype
 import pandas as pd
 
 
-from dataset_utils import retrieve, LearningTask, Data
+from dataset_utils import retrieve, LearningTask, Data, npy_to_data, data_to_npy
 
 def __prepare_airline(dataset_folder, dataset_parameters, regression=False):  # pylint: disable=too-many-locals
     nrows = dataset_parameters['nrows']
     url = 'http://kt.ijs.si/elena_ikonomovska/datasets/airline/airline_14col.data.bz2'
-    pkl_base_name = "airline"
     if regression:
-        pkl_base_name += "-regression"
+        task = LearningTask.REGRESSION
+    else:
+        task = LearningTask.CLASSIFICATION
     local_url = os.path.join(dataset_folder, os.path.basename(url))
-    pickle_url = os.path.join(dataset_folder,
-                              pkl_base_name
-                              + ("" if nrows is None else "-" + str(nrows)) + ".pkl")
-    if os.path.exists(pickle_url):
-        return pickle.load(open(pickle_url, "rb"))
+    npy_path = os.path.join(dataset_folder, 'npy')
+
+    # load if npy arrays if exists
+    if os.path.isdir(npy_path):
+        return npy_to_data(npy_path, nrows=nrows, learning_task=task)
+
     if not os.path.isfile(local_url):
         retrieve(url, local_url)
 
@@ -81,12 +82,11 @@ def __prepare_airline(dataset_folder, dataset_parameters, regression=False):  # 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=77,
                                                         test_size=0.2,
                                                         )
-    if regression:
-        task = LearningTask.REGRESSION
-    else:
-        task = LearningTask.CLASSIFICATION
     data = Data(X_train, X_test, y_train, y_test, task)
-    pickle.dump(data, open(pickle_url, "wb"), protocol=4)
+
+    # store data as npy arrrays
+    data_to_npy(npy_path, data, nrows=nrows)
+
     return data
 
 def prepare_airline(dataset_folder, dataset_parameters):
@@ -99,10 +99,11 @@ def prepare_bosch(dataset_folder, dataset_parameters):
     nrows = dataset_parameters['nrows']
     filename = "train_numeric.csv.zip"
     local_url = os.path.join(dataset_folder, filename)
-    pickle_url = os.path.join(dataset_folder,
-                              "bosch" + ("" if nrows is None else "-" + str(nrows)) + ".pkl")
-    if os.path.exists(pickle_url):
-        return pickle.load(open(pickle_url, "rb"))
+    npy_path = os.path.join(dataset_folder, 'npy')
+
+    # load if npy arrays if exists
+    if os.path.isdir(npy_path):
+        return npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
 
     os.system("kaggle competitions download -c bosch-production-line-performance -f " +
               filename + " -p " + dataset_folder)
@@ -115,7 +116,10 @@ def prepare_bosch(dataset_folder, dataset_parameters):
                                                         test_size=0.2,
                                                         )
     data = Data(X_train, X_test, y_train, y_test, LearningTask.CLASSIFICATION)
-    pickle.dump(data, open(pickle_url, "wb"), protocol=4)
+
+    # store data as npy arrrays
+    data_to_npy(npy_path, data, nrows=nrows)
+
     return data
 
 def prepare_fraud(dataset_folder, dataset_parameters):
@@ -124,10 +128,11 @@ def prepare_fraud(dataset_folder, dataset_parameters):
         os.makedirs(dataset_folder)
     filename = "creditcard.csv"
     local_url = os.path.join(dataset_folder, filename)
-    pickle_url = os.path.join(dataset_folder,
-                              "creditcard" + ("" if nrows is None else "-" + str(nrows)) + ".pkl")
-    if os.path.exists(pickle_url):
-        return pickle.load(open(pickle_url, "rb"))
+    npy_path = os.path.join(dataset_folder, 'npy')
+
+    # load if npy arrays if exists
+    if os.path.isdir(npy_path):
+        return npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
 
     os.system("kaggle datasets download mlg-ulb/creditcardfraud -f" +
               filename + " -p " + dataset_folder)
@@ -138,18 +143,22 @@ def prepare_fraud(dataset_folder, dataset_parameters):
                                                         test_size=0.2,
                                                         )
     data = Data(X_train, X_test, y_train, y_test, LearningTask.CLASSIFICATION)
-    pickle.dump(data, open(pickle_url, "wb"), protocol=4)
+
+    # store data as npy arrrays
+    data_to_npy(npy_path, data, nrows=nrows)
+
     return data
 
 def prepare_higgs(dataset_folder, dataset_parameters):
     nrows = dataset_parameters['nrows']
     url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00280/HIGGS.csv.gz'
     local_url = os.path.join(dataset_folder, os.path.basename(url))
-    pickle_url = os.path.join(dataset_folder,
-                              "higgs" + ("" if nrows is None else "-" + str(nrows)) + ".pkl")
 
-    if os.path.exists(pickle_url):
-        return pickle.load(open(pickle_url, "rb"))
+    npy_path = os.path.join(dataset_folder, 'npy')
+
+    # load if npy arrays if exists
+    if os.path.isdir(npy_path):
+        return npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
 
     if not os.path.isfile(local_url):
         retrieve(url, local_url)
@@ -160,7 +169,10 @@ def prepare_higgs(dataset_folder, dataset_parameters):
                                                         test_size=0.2,
                                                         )
     data = Data(X_train, X_test, y_train, y_test, LearningTask.CLASSIFICATION)
-    pickle.dump(data, open(pickle_url, "wb"), protocol=4)
+
+    # store data as npy arrrays
+    data_to_npy(npy_path, data, nrows=nrows)
+
     return data
 
 def prepare_year(dataset_folder, dataset_parameters):
@@ -168,11 +180,10 @@ def prepare_year(dataset_folder, dataset_parameters):
     url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00203/YearPredictionMSD.txt' \
           '.zip'
     local_url = os.path.join(dataset_folder, os.path.basename(url))
-    pickle_url = os.path.join(dataset_folder,
-                              "year" + ("" if nrows is None else "-" + str(nrows)) + ".pkl")
+    npy_folder_path = os.path.join(dataset_folder, "npy")
 
-    if os.path.exists(pickle_url):
-        return pickle.load(open(pickle_url, "rb"))
+    if os.path.isdir(npy_folder_path):
+        return npy_to_data(npy_folder_path, nrows=nrows, learning_task=LearningTask.REGRESSION)
 
     if not os.path.isfile(local_url):
         retrieve(url, local_url)
@@ -196,7 +207,9 @@ def prepare_year(dataset_folder, dataset_parameters):
                                                             )
 
     data = Data(X_train, X_test, y_train, y_test, LearningTask.REGRESSION)
-    pickle.dump(data, open(pickle_url, "wb"), protocol=4)
+
+    # store data as npy arrrays
+    data_to_npy(npy_folder_path, data, nrows=nrows)
     return data
 
 def prepare_epsilon(dataset_folder, dataset_parameters):
@@ -205,13 +218,14 @@ def prepare_epsilon(dataset_folder, dataset_parameters):
                 '/epsilon_normalized.bz2'
     url_test = 'https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary' \
                '/epsilon_normalized.t.bz2'
-    pickle_url = os.path.join(dataset_folder,
-                              "epsilon" + ("" if nrows is None else "-" + str(nrows)) + ".pkl")
     local_url_train = os.path.join(dataset_folder, os.path.basename(url_train))
     local_url_test = os.path.join(dataset_folder, os.path.basename(url_test))
 
-    if os.path.exists(pickle_url):
-        return pickle.load(open(pickle_url, "rb"))
+    npy_path = os.path.join(dataset_folder, 'npy')
+
+    # load if npy arrays if exists
+    if os.path.isdir(npy_path):
+        return npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
 
     if not os.path.isfile(local_url_train):
         retrieve(url_train, local_url_train)
@@ -239,7 +253,10 @@ def prepare_epsilon(dataset_folder, dataset_parameters):
                                                             )
 
     data = Data(X_train, X_test, y_train, y_test, LearningTask.CLASSIFICATION)
-    pickle.dump(data, open(pickle_url, "wb"), protocol=4)
+
+    # store data as npy arrrays
+    data_to_npy(npy_path, data, nrows=nrows)
+
     return data
 
 def prepare_covtype(dataset_folder, dataset_parameters):  # pylint: disable=unused-argument
