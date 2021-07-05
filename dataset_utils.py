@@ -42,12 +42,15 @@ class Data:  # pylint: disable=too-few-public-methods,too-many-arguments
 
 def npy_to_data(path, nrows=None, learning_task=LearningTask.REGRESSION):
     suffix = f'.npy' if nrows is None else f'-{nrows}.npy'
-    X_train = np.load(os.path.join(path, f'X_train{suffix}'))
-    X_test = np.load(os.path.join(path, f'X_test{suffix}'))
-    y_train = np.load(os.path.join(path, f'y_train{suffix}'))
-    y_test = np.load(os.path.join(path, f'y_test{suffix}'))
+    if os.path.isfile(os.path.join(path, f'X_train{suffix}')): # no need to check for each file as they are grouped
+        X_train = np.load(os.path.join(path, f'X_train{suffix}'))
+        X_test = np.load(os.path.join(path, f'X_test{suffix}'))
+        y_train = np.load(os.path.join(path, f'y_train{suffix}'))
+        y_test = np.load(os.path.join(path, f'y_test{suffix}'))
 
-    return Data(X_train, X_test, y_train, y_test, learning_task)
+        return Data(X_train, X_test, y_train, y_test, learning_task)
+    else:
+        return None
 
 def data_to_npy(path, data, nrows=None):
     if(not os.path.isdir(path)):

@@ -43,7 +43,9 @@ def __prepare_airline(dataset_folder, dataset_parameters, regression=False):  # 
 
     # load if npy arrays if exists
     if os.path.isdir(npy_path):
-        return npy_to_data(npy_path, nrows=nrows, learning_task=task)
+        ret_data = npy_to_data(npy_path, nrows=nrows, learning_task=task)
+        if ret_data is not None:
+            return ret_data
 
     if not os.path.isfile(local_url):
         retrieve(url, local_url)
@@ -103,7 +105,9 @@ def prepare_bosch(dataset_folder, dataset_parameters):
 
     # load if npy arrays if exists
     if os.path.isdir(npy_path):
-        return npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
+        ret_data = npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
+        if ret_data is not None:
+            return ret_data
 
     os.system("kaggle competitions download -c bosch-production-line-performance -f " +
               filename + " -p " + dataset_folder)
@@ -132,7 +136,9 @@ def prepare_fraud(dataset_folder, dataset_parameters):
 
     # load if npy arrays if exists
     if os.path.isdir(npy_path):
-        return npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
+        ret_data = npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
+        if ret_data is not None:
+            return ret_data
 
     os.system("kaggle datasets download mlg-ulb/creditcardfraud -f" +
               filename + " -p " + dataset_folder)
@@ -158,7 +164,9 @@ def prepare_higgs(dataset_folder, dataset_parameters):
 
     # load if npy arrays if exists
     if os.path.isdir(npy_path):
-        return npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
+        ret_data = npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
+        if ret_data is not None:
+            return ret_data
 
     if not os.path.isfile(local_url):
         retrieve(url, local_url)
@@ -180,10 +188,12 @@ def prepare_year(dataset_folder, dataset_parameters):
     url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00203/YearPredictionMSD.txt' \
           '.zip'
     local_url = os.path.join(dataset_folder, os.path.basename(url))
-    npy_folder_path = os.path.join(dataset_folder, "npy")
+    npy_path = os.path.join(dataset_folder, "npy")
 
-    if os.path.isdir(npy_folder_path):
-        return npy_to_data(npy_folder_path, nrows=nrows, learning_task=LearningTask.REGRESSION)
+    if os.path.isdir(npy_path):
+        ret_data = npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.REGRESSION)
+        if ret_data is not None:
+            return ret_data
 
     if not os.path.isfile(local_url):
         retrieve(url, local_url)
@@ -209,7 +219,7 @@ def prepare_year(dataset_folder, dataset_parameters):
     data = Data(X_train, X_test, y_train, y_test, LearningTask.REGRESSION)
 
     # store data as npy arrrays
-    data_to_npy(npy_folder_path, data, nrows=nrows)
+    data_to_npy(npy_path, data, nrows=nrows)
     return data
 
 def prepare_epsilon(dataset_folder, dataset_parameters):
@@ -225,7 +235,9 @@ def prepare_epsilon(dataset_folder, dataset_parameters):
 
     # load if npy arrays if exists
     if os.path.isdir(npy_path):
-        return npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
+        ret_data = npy_to_data(npy_path, nrows=nrows, learning_task=LearningTask.CLASSIFICATION)
+        if ret_data is not None:
+            return ret_data
 
     if not os.path.isfile(local_url_train):
         retrieve(url_train, local_url_train)
