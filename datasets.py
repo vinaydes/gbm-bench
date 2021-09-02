@@ -31,6 +31,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_svmlight_file, fetch_covtype
 import pandas as pd
 import tqdm
+from sklearn.datasets import make_classification, make_regression
 
 pbar = None
 
@@ -300,3 +301,51 @@ def prepare_covtype(dataset_folder, nrows):  # pylint: disable=unused-argument
                                                         test_size=0.2,
                                                         )
     return Data(X_train, X_test, y_train, y_test, LearningTask.MULTICLASS_CLASSIFICATION)
+
+def prepare_synthetic_classification(dataset_folder, dataset_parameters):
+    _dataset_params = {
+        'n_samples'            : dataset_parameters['nrows'],
+        'n_features'           : dataset_parameters['ncols'],
+        'n_informative'        : round(dataset_parameters['ncols'] * 0.9),
+        'n_redundant'          : 0,
+        'n_repeated'           : 0,
+        'n_classes'            : dataset_parameters['n_classes'],
+        'n_clusters_per_class' : 2,
+        'weights'              : None,
+        'flip_y'               : dataset_parameters['flip_y'],
+        'class_sep'            : 1.0,
+        'hypercube'            : True,
+        'shift'                : 0.0,
+        'scale'                : 1.0,
+        'shuffle'              : True,
+        'random_state'         : dataset_parameters['random_state']
+    }
+    [X, y] = make_classification(**_dataset_params)
+    X = np.float32(X)
+    y = np.int32(y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=77,
+                                                        test_size=0.2,
+                                                        )
+    return Data(X_train, X_test, y_train, y_test, LearningTask.MULTICLASS_CLASSIFICATION)
+
+def prepare_synthetic_regression(dataset_folder, dataset_parameters):
+    _dataset_params = {
+        'n_samples'            : dataset_parameters['nrows'],
+        'n_features'           : dataset_parameters['ncols'],
+        'n_informative'        : round(dataset_parameters['ncols'] * 0.9),
+        'n_targets'            : 1,
+        'bias'                 : 0,
+        'effective_rank'       : None,
+        'tail_strength'        : 0.5,
+        'noise'                : dataset_parameters['noise'],
+        'shuffle'              : True,
+        'coef'                 : False,
+        'random_state'         : dataset_parameters['random_state']
+    }
+    [X, y] = make_regression(**_dataset_params)
+    X = np.float32(X)
+    y = np.int32(y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=77,
+                                                        test_size=0.2,
+                                                        )
+    return Data(X_train, X_test, y_train, y_test, LearningTask.REGRESSION)

@@ -35,6 +35,10 @@ import algorithms
 from metrics import get_metrics
 from datasets import prepare_dataset
 
+from datasets import (prepare_airline, prepare_airline_regression, prepare_bosch,
+                      prepare_fraud, prepare_higgs, prepare_year, prepare_epsilon,
+                      prepare_covtype, prepare_synthetic_classification,
+                      prepare_synthetic_regression)
 
 def get_number_processors(args):
     if args.cpus == 0:
